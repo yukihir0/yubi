@@ -1,19 +1,21 @@
-use crate::spec::{Spec, SpecResponse};
+use crate::spec::spec_response::SpecResponse;
+use crate::spec::Spec;
 use anyhow::Result;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 use std::io::Write;
 
-pub struct Report {
-    responses: HashMap<Spec, SpecResponse>,
-    errors: HashMap<Spec, anyhow::Error>,
-    output: Box<dyn Write>,
+pub struct Report<'a> {
+    // use IndexMap to guarantee the order of insertion
+    responses: IndexMap<Spec, SpecResponse>,
+    errors: IndexMap<Spec, anyhow::Error>,
+    output: &'a mut dyn Write,
 }
 
-impl Report {
-    pub fn new(output: Box<dyn Write>) -> Report {
+impl<'a> Report<'a> {
+    pub fn new(output: &mut dyn Write) -> Report {
         Report {
-            responses: HashMap::new(),
-            errors: HashMap::new(),
+            responses: IndexMap::new(),
+            errors: IndexMap::new(),
             output: output,
         }
     }
@@ -32,41 +34,38 @@ impl Report {
         Ok(())
     }
 
+    pub fn is_all_green(&self) -> bool {
+        self.total_count() == self.success_count() 
+    }
+
     fn print_summary(&mut self) -> Result<()> {
-        writeln!(self.output, "--- summary ---")?;
-        writeln!(self.output, "total: {}", self.total_count())?;
-        writeln!(self.output, "success: {}", self.success_count())?;
-        writeln!(self.output, "fail: {}", self.fail_count())?;
-        writeln!(self.output, "error: {}", self.error_count())?;
+        writeln!(self.output, "summary:")?;
+        writeln!(self.output, "  total: {}", self.total_count())?;
+        writeln!(self.output, "  success: {}", self.success_count())?;
+        writeln!(self.output, "  failure: {}", self.failure_count())?;
+        writeln!(self.output, "  error: {}", self.error_count())?;
         writeln!(self.output, "")?;
         Ok(())
     }
 
     fn print_detail(&mut self) -> Result<()> {
-        writeln!(self.output, "--- detail ---")?;
-        for (spec, res) in &self.responses {
-            writeln!(self.output, "{}:", spec)?;
-            writeln!(self.output, "  result: {}", res.status())?;
-            writeln!(self.output, "  message: {}", res)?;
+        writeln!(self.output, "detail:")?;
+        for (spec, spec_response) in &self.responses {
+            writeln!(self.output, "{}", spec)?;
+            writeln!(self.output, "{}", spec_response)?;
         }
-        for (spec, e) in &self.errors {
-            writeln!(self.output, "{}:", spec)?;
-            writeln!(self.output, "  result: error")?;
-            writeln!(self.output, "  message: {}", e)?;
+        for (spec, error) in &self.errors {
+            writeln!(self.output, "{}", spec)?;
+            writeln!(self.output, "    spec_response:")?;
+            writeln!(self.output, "      result: error")?;
+            writeln!(self.output, "      message: {}", error)?;
         }
         writeln!(self.output, "")?;
         Ok(())
     }
 
-    pub fn is_all_success(&self) -> bool {
-        self.responses.values().all(|res| match res {
-            SpecResponse::Success { message: _ } => true,
-            _ => false,
-        })
-    }
-
     fn total_count(&self) -> usize {
-        self.success_count() + self.fail_count() + self.error_count()
+        self.success_count() + self.failure_count() + self.error_count()
     }
 
     fn success_count(&self) -> usize {
@@ -78,16 +77,220 @@ impl Report {
         success_responses.count()
     }
 
-    fn fail_count(&self) -> usize {
-        let fail_responses = self.responses.values().filter(|res| match res {
-            SpecResponse::Fail { message: _ } => true,
+    fn failure_count(&self) -> usize {
+        let failure_responses = self.responses.values().filter(|res| match res {
+            SpecResponse::Failure { message: _ } => true,
             _ => false,
         });
 
-        fail_responses.count()
+        failure_responses.count()
     }
 
     fn error_count(&self) -> usize {
         self.errors.values().len()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::report::*;
+    use crate::spec::*;
+    use rstest::*;
+
+    #[rstest]
+    #[case(
+        SpecResponse::Success {message: format!("response")},
+        1,
+        1,
+        0,
+        0,
+        true
+    )]
+    #[case(
+        SpecResponse::Failure{message: format!("response")},
+        1, 
+        0, 
+        1, 
+        0, 
+        false
+    )]
+    #[trace]
+    fn test_add_response(
+        #[case] spec_response: SpecResponse,
+        #[case] expected_total: usize,
+        #[case] expected_success_count: usize,
+        #[case] expected_failure_count: usize,
+        #[case] expected_error_count: usize,
+        #[case] expected_is_all_green: bool,
+    ) {
+        let spec = Spec::GKEClusterStatus {
+            project: format!("project"),
+            location: format!("location"),
+            cluster: format!("cluster"),
+        };
+
+        let mut stdout = vec![];
+        let mut report = Report::new(&mut stdout);
+        report.add_response(spec, spec_response);
+
+        assert_eq!(report.total_count(), expected_total);
+        assert_eq!(report.success_count(), expected_success_count);
+        assert_eq!(report.failure_count(), expected_failure_count);
+        assert_eq!(report.error_count(), expected_error_count);
+        assert_eq!(report.is_all_green(), expected_is_all_green);
+    }
+
+    #[rstest]
+    #[case(
+        anyhow::Error::new(std::io::Error::new(std::io::ErrorKind::Other, "error")),
+        1,
+        0,
+        0,
+        1,
+        false
+    )]
+    #[trace]
+    fn test_add_error(
+        #[case] error: anyhow::Error,
+        #[case] expected_total: usize,
+        #[case] expected_success_count: usize,
+        #[case] expected_failure_count: usize,
+        #[case] expected_error_count: usize,
+        #[case] expected_is_all_green: bool,
+    ) {
+        let spec = Spec::GKEClusterStatus {
+            project: format!("project"),
+            location: format!("location"),
+            cluster: format!("cluster"),
+        };
+
+        let mut stdout = vec![];
+        let mut report = Report::new(&mut stdout);
+        report.add_error(spec, error);
+
+        assert_eq!(report.total_count(), expected_total);
+        assert_eq!(report.success_count(), expected_success_count);
+        assert_eq!(report.failure_count(), expected_failure_count);
+        assert_eq!(report.error_count(), expected_error_count);
+        assert_eq!(report.is_all_green(), expected_is_all_green);
+    }
+
+    #[fixture]
+    fn spec_responses_fixture() -> IndexMap<Spec, SpecResponse> {
+        let mut spec_responses = IndexMap::new();
+        spec_responses.insert(
+            Spec::GKEClusterStatus {
+                project: format!("success_project"),
+                location: format!("success_location"),
+                cluster: format!("success_cluster"),
+            },
+            SpecResponse::Success {message: format!("success_response"),}
+        );
+        spec_responses.insert(
+            Spec::GKEClusterStatus {
+                project: format!("failure_project"),
+                location: format!("failure_location"),
+                cluster: format!("failure_cluster"),
+            },
+            SpecResponse::Failure {message: format!("failure_response")},  
+        );
+        
+        spec_responses
+    }
+
+    #[fixture]
+    fn errors_fixture() -> IndexMap<Spec, anyhow::Error> { 
+        let mut errors = IndexMap::new();
+        errors.insert(
+            Spec::GKEClusterStatus {
+            project: format!("error_project"),
+            location: format!("error_location"),
+            cluster: format!("error_cluster"),
+        },
+        anyhow::Error::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "error_response",
+        ))
+        );
+
+        errors
+    }
+
+    #[rstest]
+    #[case(
+        3,
+        1,
+        1,
+        1,
+        false,
+        format!(r#"summary:
+  total: 3
+  success: 1
+  failure: 1
+  error: 1
+
+detail:
+  - spec:
+      operator: GKEClusterStatus
+      project: success_project
+      location: success_location
+      cluster: success_cluster
+    spec_response:
+      result: success
+      message: success_response
+  - spec:
+      operator: GKEClusterStatus
+      project: failure_project
+      location: failure_location
+      cluster: failure_cluster
+    spec_response:
+      result: failure
+      message: failure_response
+  - spec:
+      operator: GKEClusterStatus
+      project: error_project
+      location: error_location
+      cluster: error_cluster
+    spec_response:
+      result: error
+      message: error_response
+
+"#)
+    )]
+    #[trace]
+    fn test_print(
+        spec_responses_fixture: IndexMap<Spec, SpecResponse>,
+        errors_fixture: IndexMap<Spec, anyhow::Error>,
+        #[case] expected_total: usize,
+        #[case] expected_success_count: usize,
+        #[case] expected_failure_count: usize,
+        #[case] expected_error_count: usize,
+        #[case] expected_is_all_green: bool,
+        #[case] expected_report: String,
+    ) {
+        let mut stdout = vec![];
+        let mut report = Report::new(&mut stdout);
+        for (spec, spec_response) in spec_responses_fixture {
+            report.add_response(spec, spec_response);
+        }
+        for (spec, error) in errors_fixture {
+            report.add_error(spec, error);
+        }
+
+        match report.print() {
+            Ok(()) => {
+                assert!(true, "print report success")
+            }
+            Err(_) => {
+                assert!(false, "print report error")
+            }
+        }
+
+        assert_eq!(report.total_count(), expected_total);
+        assert_eq!(report.success_count(), expected_success_count);
+        assert_eq!(report.failure_count(), expected_failure_count);
+        assert_eq!(report.error_count(), expected_error_count);
+        assert_eq!(report.is_all_green(), expected_is_all_green);
+        assert_eq!(String::from_utf8(stdout.to_vec()).unwrap(), expected_report);
     }
 }

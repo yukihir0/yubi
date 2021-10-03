@@ -12,7 +12,7 @@ use yubi::spec::Spec;
 
 enum StatusCode {
     Success = 0,
-    Fail = 1,
+    Failure = 1,
 }
 
 fn parse_specfile(path: &str) -> Result<Vec<Spec>> {
@@ -47,8 +47,8 @@ async fn main() -> Result<()> {
     let specs = parse_specfile(path)?;
 
     log::debug!("initialize report");
-    let stdout = io::stdout();
-    let mut report = Report::new(Box::new(stdout));
+    let mut stdout = io::stdout();
+    let mut report = Report::new(&mut stdout);
 
     log::debug!("check specs");
     for spec in specs {
@@ -66,9 +66,9 @@ async fn main() -> Result<()> {
     report.print()?;
 
     log::debug!("exit with status code");
-    std::process::exit(if report.is_all_success() {
+    std::process::exit(if report.is_all_green() {
         StatusCode::Success as i32
     } else {
-        StatusCode::Fail as i32
+        StatusCode::Failure as i32
     });
 }
