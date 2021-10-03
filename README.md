@@ -1,5 +1,7 @@
 # yubi
 
+[![test](https://github.com/yukihir0/yubi/workflows/test/badge.svg)](https://github.com/yukihir0/yubi/actions?query=workflow%3Atest)
+
 "yubi" is a tool for automate check status of services.
 
 It is named after the pointing and calling method, aka "yubi-sashi-kakunin".
