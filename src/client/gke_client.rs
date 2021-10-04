@@ -43,7 +43,10 @@ impl GKEClientTrait for GKEClient {
         location: &String,
         cluster: &String,
     ) -> Result<cluster::Status> {
-        let token = Token::new()?;
+        let token = Token::new().map_err(|e| {
+            let msg = format!("\"{}\"", e);
+            anyhow::Error::new(e).context(msg)
+        })?;
 
         let tls_config = ClientTlsConfig::new()
             .ca_certificate(Certificate::from_pem(CERTIFICATES))
@@ -52,7 +55,11 @@ impl GKEClientTrait for GKEClient {
         let channel = Channel::from_static("https://container.googleapis.com")
             .tls_config(tls_config)?
             .connect()
-            .await?;
+            .await
+            .map_err(|e| {
+                let msg = format!("\"{}\"", e);
+                anyhow::Error::new(e).context(msg)
+            })?;
 
         let mut client =
             ClusterManagerClient::with_interceptor(channel, move |mut req: Request<()>| {
@@ -70,7 +77,11 @@ impl GKEClientTrait for GKEClient {
                 ),
                 ..Default::default()
             }))
-            .await?;
+            .await
+            .map_err(|e| {
+                let msg = format!("\"{}\"", e.message());
+                anyhow::Error::new(e).context(msg)
+            })?;
 
         let status = match response.into_inner().status {
             0 => cluster::Status::Unspecified,
