@@ -3,3 +3,6 @@
   project: "<gcp project>"
   location: "<gcp region> or <gcp zone>"
   cluster: "<gke cluster>"
+  status:
+    - Provisioning
+    - Running

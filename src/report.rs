@@ -35,7 +35,7 @@ impl<'a> Report<'a> {
     }
 
     pub fn is_all_green(&self) -> bool {
-        self.total_count() == self.success_count() 
+        self.total_count() == self.success_count()
     }
 
     fn print_summary(&mut self) -> Result<()> {
@@ -108,10 +108,10 @@ mod tests {
     )]
     #[case(
         SpecResponse::Failure{message: format!("response")},
-        1, 
-        0, 
-        1, 
-        0, 
+        1,
+        0,
+        1,
+        0,
         false
     )]
     #[trace]
@@ -127,6 +127,7 @@ mod tests {
             project: format!("project"),
             location: format!("location"),
             cluster: format!("cluster"),
+            status: vec![ClusterStatus::Provisioning, ClusterStatus::Running],
         };
 
         let mut stdout = vec![];
@@ -162,6 +163,7 @@ mod tests {
             project: format!("project"),
             location: format!("location"),
             cluster: format!("cluster"),
+            status: vec![ClusterStatus::Provisioning, ClusterStatus::Running],
         };
 
         let mut stdout = vec![];
@@ -176,41 +178,47 @@ mod tests {
     }
 
     #[fixture]
-    fn spec_responses_fixture() -> IndexMap<Spec, SpecResponse> {
+    fn spec_responses_map_fixture() -> IndexMap<Spec, SpecResponse> {
         let mut spec_responses = IndexMap::new();
         spec_responses.insert(
             Spec::GKEClusterStatus {
                 project: format!("success_project"),
                 location: format!("success_location"),
                 cluster: format!("success_cluster"),
+                status: vec![ClusterStatus::Provisioning, ClusterStatus::Running],
             },
-            SpecResponse::Success {message: format!("success_response"),}
+            SpecResponse::Success {
+                message: format!("success_response"),
+            },
         );
         spec_responses.insert(
             Spec::GKEClusterStatus {
                 project: format!("failure_project"),
                 location: format!("failure_location"),
                 cluster: format!("failure_cluster"),
+                status: vec![ClusterStatus::Provisioning, ClusterStatus::Running],
             },
-            SpecResponse::Failure {message: format!("failure_response")},  
+            SpecResponse::Failure {
+                message: format!("failure_response"),
+            },
         );
-        
         spec_responses
     }
 
     #[fixture]
-    fn errors_fixture() -> IndexMap<Spec, anyhow::Error> { 
+    fn errors_map_fixture() -> IndexMap<Spec, anyhow::Error> {
         let mut errors = IndexMap::new();
         errors.insert(
             Spec::GKEClusterStatus {
-            project: format!("error_project"),
-            location: format!("error_location"),
-            cluster: format!("error_cluster"),
-        },
-        anyhow::Error::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "error_response",
-        ))
+                project: format!("error_project"),
+                location: format!("error_location"),
+                cluster: format!("error_cluster"),
+                status: vec![ClusterStatus::Provisioning, ClusterStatus::Running],
+            },
+            anyhow::Error::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "error_response",
+            )),
         );
 
         errors
@@ -235,6 +243,9 @@ detail:
       project: success_project
       location: success_location
       cluster: success_cluster
+      status:
+        - Provisioning
+        - Running
     spec_response:
       result: success
       message: success_response
@@ -243,6 +254,9 @@ detail:
       project: failure_project
       location: failure_location
       cluster: failure_cluster
+      status:
+        - Provisioning
+        - Running
     spec_response:
       result: failure
       message: failure_response
@@ -251,6 +265,9 @@ detail:
       project: error_project
       location: error_location
       cluster: error_cluster
+      status:
+        - Provisioning
+        - Running
     spec_response:
       result: error
       message: error_response
@@ -259,8 +276,8 @@ detail:
     )]
     #[trace]
     fn test_print(
-        spec_responses_fixture: IndexMap<Spec, SpecResponse>,
-        errors_fixture: IndexMap<Spec, anyhow::Error>,
+        spec_responses_map_fixture: IndexMap<Spec, SpecResponse>,
+        errors_map_fixture: IndexMap<Spec, anyhow::Error>,
         #[case] expected_total: usize,
         #[case] expected_success_count: usize,
         #[case] expected_failure_count: usize,
@@ -270,10 +287,10 @@ detail:
     ) {
         let mut stdout = vec![];
         let mut report = Report::new(&mut stdout);
-        for (spec, spec_response) in spec_responses_fixture {
+        for (spec, spec_response) in spec_responses_map_fixture {
             report.add_response(spec, spec_response);
         }
-        for (spec, error) in errors_fixture {
+        for (spec, error) in errors_map_fixture {
             report.add_error(spec, error);
         }
 
