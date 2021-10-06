@@ -1,7 +1,9 @@
 use crate::spec::spec_response::SpecResponse;
 use crate::spec::Spec;
 use anyhow::Result;
+use handlebars::Handlebars;
 use indexmap::IndexMap;
+use std::collections::HashMap;
 use std::io::Write;
 
 pub struct Report<'a> {
@@ -39,17 +41,25 @@ impl<'a> Report<'a> {
     }
 
     fn print_summary(&mut self) -> Result<()> {
-        writeln!(self.output, "summary:")?;
-        writeln!(self.output, "  total: {}", self.total_count())?;
-        writeln!(self.output, "  success: {}", self.success_count())?;
-        writeln!(self.output, "  failure: {}", self.failure_count())?;
-        writeln!(self.output, "  error: {}", self.error_count())?;
-        writeln!(self.output, "")?;
+        let mut data = HashMap::<&str, usize>::new();
+        data.insert("total_count", self.total_count());
+        data.insert("success_count", self.success_count());
+        data.insert("failure_count", self.failure_count());
+        data.insert("error_count", self.error_count());
+
+        let mut hbs = Handlebars::new();
+        hbs.register_template_file("summary", "./src/templates/summary.hbs")?;
+        writeln!(self.output, "{}", hbs.render("summary", &data)?)?;
         Ok(())
     }
 
     fn print_detail(&mut self) -> Result<()> {
-        writeln!(self.output, "detail:")?;
+        let mut data = HashMap::<&str, usize>::new();
+
+        let mut hbs = Handlebars::new();
+        hbs.register_template_file("detail", "./src/templates/detail.hbs")?;
+        writeln!(self.output, "{}", hbs.render("detail", &data)?)?;
+
         for (spec, spec_response) in &self.responses {
             writeln!(self.output, "{}", spec)?;
             writeln!(self.output, "{}", spec_response)?;
