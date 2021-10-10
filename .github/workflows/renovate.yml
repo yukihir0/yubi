@@ -1,0 +1,19 @@
+name: renovate
+
+on:
+  schedule:
+    # run at JST 18:00 everyday
+    - cron: "0 9 * * *"
+
+ jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: self-hosted renovate
+        uses: renovatebot/github-action@v27.31.4
+        with:
+          configurationFile: renovate.json
+          token: ${{ secrets.RENOVATE_TOKEN }}
