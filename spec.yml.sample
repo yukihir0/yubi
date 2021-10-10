@@ -1,8 +1,8 @@
 ---
 - operator: GKEClusterStatus
-  project: "<gcp project>"
-  location: "<gcp region> or <gcp zone>"
-  cluster: "<gke cluster>"
+  project: gcp_project
+  location: gcp_region
+  cluster: gke_cluster
   status:
     - Provisioning
     - Running
