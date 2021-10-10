@@ -13,9 +13,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
-      - uses: actions/checkout@v2
+      - name: checkout
+        uses: actions/checkout@v2
       - name: build
         run: cargo build --verbose
       - name: test
