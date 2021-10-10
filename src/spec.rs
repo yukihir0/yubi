@@ -1,14 +1,15 @@
-pub mod spec_response;
+pub mod result;
 
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
+use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde::Deserialize;
 use std::fmt;
 
 use crate::client::gke_client::GKEClient;
-use crate::operator::gke_cluster_status_operator::GKEClusterStatusOperator;
-use crate::spec::spec_response::SpecResponse;
+use crate::operator::gke_cluster_status::GKEClusterStatusOperator;
+use crate::spec::result::SpecResult;
 
-#[derive(Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone)]
 pub enum ClusterStatus {
     Unspecified,
     Provisioning,
@@ -19,6 +20,15 @@ pub enum ClusterStatus {
     Degraded,
 }
 
+impl Serialize for ClusterStatus {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&format!("{:?}", self))
+    }
+}
+
 impl fmt::Display for ClusterStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)?;
@@ -26,7 +36,7 @@ impl fmt::Display for ClusterStatus {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone)]
 #[serde(tag = "operator")]
 pub enum Spec {
     GKEClusterStatus {
@@ -37,8 +47,11 @@ pub enum Spec {
     },
 }
 
-impl fmt::Display for Spec {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Serialize for Spec {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         match self {
             Self::GKEClusterStatus {
                 project,
@@ -46,27 +59,20 @@ impl fmt::Display for Spec {
                 cluster,
                 status,
             } => {
-                writeln!(f, "  - spec:")?;
-                writeln!(f, "      operator: GKEClusterStatus")?;
-                writeln!(f, "      project: {}", project)?;
-                writeln!(f, "      location: {}", location)?;
-                writeln!(f, "      cluster: {}", cluster)?;
-                writeln!(f, "      status:")?;
-                for (i, s) in status.iter().enumerate() {
-                    if i == status.len() - 1 {
-                        write!(f, "        - {:?}", s)?;
-                    } else {
-                        writeln!(f, "        - {:?}", s)?;
-                    }
-                }
-                Ok(())
+                let mut map = serializer.serialize_map(Some(5))?;
+                map.serialize_entry("operator", "GKEClusterStatus")?;
+                map.serialize_entry("project", project)?;
+                map.serialize_entry("location", location)?;
+                map.serialize_entry("cluster", cluster)?;
+                map.serialize_entry("status", status)?;
+                map.end()
             }
         }
     }
 }
 
 impl Spec {
-    pub async fn check(&self) -> Result<SpecResponse> {
+    pub async fn check(&self) -> Result<SpecResult> {
         match self {
             Self::GKEClusterStatus {
                 project,
@@ -91,19 +97,71 @@ impl Spec {
 #[cfg(test)]
 mod tests {
     use crate::spec::*;
-    use rstest::rstest;
+    use rstest::*;
 
     #[rstest]
-    #[case(ClusterStatus::Unspecified, format!("Unspecified"))]
-    #[case(ClusterStatus::Provisioning, format!("Provisioning"))]
-    #[case(ClusterStatus::Running, format!("Running"))]
-    #[case(ClusterStatus::Reconciling, format!("Reconciling"))]
-    #[case(ClusterStatus::Stopping, format!("Stopping"))]
-    #[case(ClusterStatus::Error, format!("Error"))]
-    #[case(ClusterStatus::Degraded, format!("Degraded"))]
+    #[case(
+        ClusterStatus::Unspecified,
+        format!(
+r#"---
+Unspecified
+"#
+        )
+    )]
+    #[case(
+        ClusterStatus::Provisioning,
+        format!(
+r#"---
+Provisioning
+"#
+        )
+    )]
+    #[case(
+        ClusterStatus::Running,
+        format!(
+r#"---
+Running
+"#
+        )
+    )]
+    #[case(
+        ClusterStatus::Reconciling,
+        format!(
+r#"---
+Reconciling
+"#
+        )
+    )]
+    #[case(
+        ClusterStatus::Stopping,
+        format!(
+r#"---
+Stopping
+"#
+        )
+    )]
+    #[case(
+        ClusterStatus::Error,
+        format!(
+r#"---
+Error
+"#
+        )
+    )]
+    #[case(
+        ClusterStatus::Degraded,
+        format!(
+r#"---
+Degraded
+"#
+        )
+    )]
     #[trace]
-    fn test_cluster_status_fmt(#[case] cluster_status: ClusterStatus, #[case] expected: String) {
-        assert_eq!(format!("{}", cluster_status), expected);
+    fn test_cluster_status_serialize(
+        #[case] cluster_status: ClusterStatus,
+        #[case] expected: String,
+    ) {
+        assert_eq!(serde_yaml::to_string(&cluster_status).unwrap(), expected);
     }
 
     #[rstest]
@@ -114,13 +172,16 @@ mod tests {
             cluster: format!("cluster-001"),
             status: vec![ClusterStatus::Provisioning],
         },
-        format!(r#"  - spec:
-      operator: GKEClusterStatus
-      project: project-001
-      location: location-001
-      cluster: cluster-001
-      status:
-        - Provisioning"#)
+        format!(
+r#"---
+operator: GKEClusterStatus
+project: project-001
+location: location-001
+cluster: cluster-001
+status:
+  - Provisioning
+"#
+        )
     )]
     #[case(
         Spec::GKEClusterStatus {
@@ -129,17 +190,20 @@ mod tests {
             cluster: format!("cluster-002"),
             status: vec![ClusterStatus::Provisioning, ClusterStatus::Running],
         },
-        format!(r#"  - spec:
-      operator: GKEClusterStatus
-      project: project-002
-      location: location-002
-      cluster: cluster-002
-      status:
-        - Provisioning
-        - Running"#)
+        format!(
+r#"---
+operator: GKEClusterStatus
+project: project-002
+location: location-002
+cluster: cluster-002
+status:
+  - Provisioning
+  - Running
+"#
+        )
     )]
     #[trace]
-    fn test_spec_fmt(#[case] spec: Spec, #[case] expected: String) {
-        assert_eq!(format!("{}", spec), expected);
+    fn test_spec_serialize(#[case] spec: Spec, #[case] expected: String) {
+        assert_eq!(serde_yaml::to_string(&spec).unwrap(), expected);
     }
 }

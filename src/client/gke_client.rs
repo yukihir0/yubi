@@ -44,7 +44,7 @@ impl GKEClientTrait for GKEClient {
         cluster: &String,
     ) -> Result<cluster::Status> {
         let token = Token::new().map_err(|e| {
-            let msg = format!("\"{}\"", e);
+            let msg = format!("{}", e);
             anyhow::Error::new(e).context(msg)
         })?;
 
@@ -57,16 +57,16 @@ impl GKEClientTrait for GKEClient {
             .connect()
             .await
             .map_err(|e| {
-                let msg = format!("\"{}\"", e);
+                let msg = format!("{}", e);
                 anyhow::Error::new(e).context(msg)
             })?;
 
         let mut client =
-            ClusterManagerClient::with_interceptor(channel, move |mut req: Request<()>| {
+            ClusterManagerClient::with_interceptor(channel, move |mut request: Request<()>| {
                 let token = &*token.header_value().unwrap();
                 let meta = MetadataValue::from_str(token).unwrap();
-                req.metadata_mut().insert("authorization", meta);
-                Ok(req)
+                request.metadata_mut().insert("authorization", meta);
+                Ok(request)
             });
 
         let response = client
@@ -79,7 +79,7 @@ impl GKEClientTrait for GKEClient {
             }))
             .await
             .map_err(|e| {
-                let msg = format!("\"{}\"", e.message());
+                let msg = format!("{}", e.message());
                 anyhow::Error::new(e).context(msg)
             })?;
 
