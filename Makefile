@@ -14,6 +14,10 @@ test:
 test_watch:
 	cargo watch -x test
 
+.PHONY: audit
+audit:
+	cargo audit
+
 .PHONY: build
 build:
 	cargo build --release
