@@ -3,7 +3,7 @@
   "timezone": "Asia/Tokyo",
   "repositories": ["yukihir0/yubi"],
   "baseBranches": ["main"],
-  "enabledManagers": ["cargo"],
+  "enabledManagers": ["cargo", "dockerfile"],
   "rangeStrategy": "pin",
   "packageRules": []
 }
