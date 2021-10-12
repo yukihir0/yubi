@@ -1,0 +1,11 @@
+{
+  "name": "yubi",
+  "context": "..",
+  "dockerFile": "./Dockerfile",
+  "settings": {
+    "files.watcherExclude": {
+      "**/target/**": true
+    }
+  },
+  "extensions": ["rust-lang.rust"]
+}
