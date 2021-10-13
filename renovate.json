@@ -5,5 +5,14 @@
   "baseBranches": ["main"],
   "enabledManagers": ["cargo", "dockerfile"],
   "rangeStrategy": "pin",
-  "packageRules": []
+  "packageRules": [
+    {
+      "groupName": "prost",
+      "matchPackageNames": ["prost", "prost-types"]
+    },
+    {
+      "groupName": "serde",
+      "matchPackageNames": ["serde", "serde_yaml"]
+    }
+  ]
 }
