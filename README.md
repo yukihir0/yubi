@@ -153,6 +153,12 @@ spec format same as operator.
 % make test_watch
 ```
 
+### test coverage
+
+```
+% make test_coverage
+```
+
 ### build
 
 ```

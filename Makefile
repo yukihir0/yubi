@@ -14,6 +14,10 @@ test:
 test_watch:
 	cargo watch -x test
 
+.PHONY: test_coverage
+test_coverage:
+	./script/coverage.sh
+
 .PHONY: audit
 audit:
 	cargo audit
