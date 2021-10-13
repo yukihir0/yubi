@@ -13,7 +13,7 @@ googapis = { version = "0.5.0", features = ["google-container-v1"] }
 gouth = { version = "0.2.1" }
 log = "0.4.14"
 prost = "0.8.0"
-prost-types = "0.8.0"
+prost-types = "0.9.0"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_yaml = "0.8.21"
 tokio = { version = "1.12.0", features = ["rt-multi-thread", "time", "fs", "macros"] }
