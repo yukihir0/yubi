@@ -97,10 +97,10 @@ detail:
 
 | key     | description           | type   | value |
 | ------- | --------------------- | ------ | ----- |
-| total   | count of spec         | number | 0     |
-| success | count of success spec | number | 0     |
-| failure | count of failure spec | number | 0     |
-| error   | count of error spec   | number | 0     |
+| total   | count of spec         | number | -     |
+| success | count of success spec | number | -     |
+| failure | count of failure spec | number | -     |
+| error   | count of error spec   | number | -     |
 
 #### detail
 
@@ -114,10 +114,10 @@ spec format same as operator.
 
 ###### format
 
-| key         | description             | type     | value                      |
-| ----------- | ----------------------- | -------- | -------------------------- |
-| code        | spce_result code        | constant | success / failure / error  |
-| description | spec_result description | string   | description of spec_result |
+| key         | description             | type     | value                     |
+| ----------- | ----------------------- | -------- | ------------------------- |
+| code        | spce_result code        | constant | success / failure / error |
+| description | spec_result description | string   | -                         |
 
 ## development
 
@@ -171,7 +171,8 @@ spec format same as operator.
 % export RENOVATE_TOKEN=<github personal access token>
 % make renovate
 ```
-### renovate_dry_run
+
+### renovate dry-run
 
 ```
 % export RENOVATE_TOKEN=<github personal access token>
