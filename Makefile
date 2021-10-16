@@ -25,3 +25,24 @@ audit:
 .PHONY: build
 build:
 	cargo build --release
+
+.PHONY: renovate
+renovate:
+	docker run \
+		--env RENOVATE_TOKEN=$$RENOVATE_TOKEN \
+		--env RENOVATE_CONFIG_FILE=/github-action/renovate.json \
+		--volume $$PWD/renovate.json:/github-action/renovate.json \
+		--volume /var/run/docker.sock:/var/run/docker.sock.raw \
+		--volume /tmp:/tmp \
+		--rm renovate/renovate:27.31.4-slim \
+
+.PHONY: renovate_dry_run
+renovate_dry_run:
+	docker run \
+		--env RENOVATE_TOKEN=$$RENOVATE_TOKEN \
+		--env RENOVATE_CONFIG_FILE=/github-action/renovate.json \
+		--volume $$PWD/renovate.json:/github-action/renovate.json \
+		--volume /var/run/docker.sock:/var/run/docker.sock.raw \
+		--volume /tmp:/tmp \
+		--rm renovate/renovate:27.31.4-slim \
+		--dry-run

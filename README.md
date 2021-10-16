@@ -164,3 +164,16 @@ spec format same as operator.
 ```
 % make build
 ```
+
+### renovate
+
+```
+% export RENOVATE_TOKEN=<github personal access token>
+% make renovate
+```
+### renovate_dry_run
+
+```
+% export RENOVATE_TOKEN=<github personal access token>
+% make renovate_dry_run
+```
