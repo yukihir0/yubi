@@ -63,6 +63,31 @@ Set GOOGLE_APPLICATION_CREDENTIALS environmen variables.
 | cluster  | gke cluster                           | string            | gke_cluster                                                                      |
 | status   | gke cluster status                    | array of constant | Unspecified / Provisioning / Running / Reconciling / Stopping / Error / Degraded |
 
+##### GKENodePoolStatus
+
+GKENodePoolStatus operator check gke node pool status within expected status.
+
+###### requirement
+
+GKENodePoolStatus operator authenticates gcp by GOOGLE_APPLICATION_CREDENTIALS.
+
+Set GOOGLE_APPLICATION_CREDENTIALS environmen variables.
+
+```
+% export GOOGLE_APPLICATION_CREDENTIALS=<path/to/credential>
+```
+
+###### format
+
+| key       | description                           | type              | value                                                                            |
+| --------- | ------------------------------------- | ----------------- | -------------------------------------------------------------------------------- |
+| operator  | operator                              | constant          | GKEClusterStatus                                                                 |
+| project   | gcp project                           | string            | gcp_project                                                                      |
+| location  | gke cluster location (region or zone) | string            | gcp_region / gcp_zone                                                            |
+| cluster   | gke cluster                           | string            | gke_cluster                                                                      |
+| node_pool | gke node pool                         | string            | gke_node_pool                                                                    |
+| status    | gke cluster status                    | array of constant | Unspecified / Provisioning / Running / Reconciling / Stopping / Error / Degraded |
+
 ### report (output)
 
 report has summary and detail.

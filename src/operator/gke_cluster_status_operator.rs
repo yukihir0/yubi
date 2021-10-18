@@ -2,8 +2,8 @@ use anyhow::Result;
 use googapis::google::container::v1::cluster;
 
 use crate::client::gke_client::GKEClientTrait;
+use crate::spec::cluster_status::ClusterStatus;
 use crate::spec::result::SpecResult;
-use crate::spec::ClusterStatus;
 
 pub struct GKEClusterStatusOperator {
     project: String,
@@ -66,7 +66,7 @@ impl GKEClusterStatusOperator {
 #[cfg(test)]
 mod tests {
     use crate::client::gke_client::*;
-    use crate::operator::gke_cluster_status::*;
+    use crate::operator::gke_cluster_status_operator::*;
     use rstest::*;
 
     #[rstest]

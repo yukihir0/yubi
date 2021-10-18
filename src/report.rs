@@ -94,6 +94,8 @@ impl Report {
 #[cfg(test)]
 mod tests {
     use crate::report::*;
+    use crate::spec::cluster_status::*;
+    use crate::spec::node_pool_status::*;
     use crate::spec::*;
     use rstest::*;
 
@@ -219,24 +221,59 @@ mod tests {
                 description: format!("error_description"),
             },
         ));
-
+        records.push(Record::new(
+            Spec::GKENodePoolStatus {
+                project: format!("success_project"),
+                location: format!("success_location"),
+                cluster: format!("success_cluster"),
+                node_pool: format!("success_node_pool"),
+                status: vec![NodePoolStatus::Provisioning, NodePoolStatus::Running],
+            },
+            SpecResult::Success {
+                description: format!("success_description"),
+            },
+        ));
+        records.push(Record::new(
+            Spec::GKENodePoolStatus {
+                project: format!("failure_project"),
+                location: format!("failure_location"),
+                cluster: format!("failure_cluster"),
+                node_pool: format!("failure_node_pool"),
+                status: vec![NodePoolStatus::Provisioning, NodePoolStatus::Running],
+            },
+            SpecResult::Failure {
+                description: format!("failure_description"),
+            },
+        ));
+        records.push(Record::new(
+            Spec::GKENodePoolStatus {
+                project: format!("error_project"),
+                location: format!("error_location"),
+                cluster: format!("error_cluster"),
+                node_pool: format!("error_node_pool"),
+                status: vec![NodePoolStatus::Provisioning, NodePoolStatus::Running],
+            },
+            SpecResult::Error {
+                description: format!("error_description"),
+            },
+        ));
         records
     }
 
     #[rstest]
     #[case(
-        3,
-        1,
-        1,
-        1,
+        6,
+        2,
+        2,
+        2,
         false,
         format!(
 r#"---
 summary:
-  total: 3
-  success: 1
-  failure: 1
-  error: 1
+  total: 6
+  success: 2
+  failure: 2
+  error: 2
 detail:
   - spec:
       operator: GKEClusterStatus
@@ -265,6 +302,42 @@ detail:
       project: error_project
       location: error_location
       cluster: error_cluster
+      status:
+        - Provisioning
+        - Running
+    spec_result:
+      code: error
+      description: error_description
+  - spec:
+      operator: GKENodePoolStatus
+      project: success_project
+      location: success_location
+      cluster: success_cluster
+      node_pool: success_node_pool
+      status:
+        - Provisioning
+        - Running
+    spec_result:
+      code: success
+      description: success_description
+  - spec:
+      operator: GKENodePoolStatus
+      project: failure_project
+      location: failure_location
+      cluster: failure_cluster
+      node_pool: failure_node_pool
+      status:
+        - Provisioning
+        - Running
+    spec_result:
+      code: failure
+      description: failure_description
+  - spec:
+      operator: GKENodePoolStatus
+      project: error_project
+      location: error_location
+      cluster: error_cluster
+      node_pool: error_node_pool
       status:
         - Provisioning
         - Running
