@@ -6,3 +6,11 @@
   status:
     - Provisioning
     - Running
+- operator: GKENodePoolStatus
+  project: gcp_project
+  location: gcp_region
+  cluster: gke_cluster
+  node_pool: gke_node_pool
+  status:
+    - Provisioning
+    - Running
