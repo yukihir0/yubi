@@ -1,18 +1,36 @@
 {
-  "extends": ["config:base"],
+  "extends": [
+    "config:base"
+  ],
   "timezone": "Asia/Tokyo",
-  "repositories": ["yukihir0/yubi"],
-  "baseBranches": ["main"],
-  "enabledManagers": ["cargo", "dockerfile"],
+  "repositories": [
+    "yukihir0/yubi"
+  ],
+  "baseBranches": [
+    "main"
+  ],
+  "enabledManagers": [
+    "cargo",
+    "dockerfile"
+  ],
   "rangeStrategy": "pin",
+  "labels": [
+    "renovate"
+  ],
   "packageRules": [
     {
       "groupName": "prost",
-      "matchPackageNames": ["prost", "prost-types"]
+      "matchPackageNames": [
+        "prost",
+        "prost-types"
+      ]
     },
     {
       "groupName": "serde",
-      "matchPackageNames": ["serde", "serde_yaml"]
+      "matchPackageNames": [
+        "serde",
+        "serde_yaml"
+      ]
     }
   ]
 }
