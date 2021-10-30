@@ -11,7 +11,8 @@
   ],
   "enabledManagers": [
     "cargo",
-    "dockerfile"
+    "dockerfile",
+    "github-actions"
   ],
   "rangeStrategy": "pin",
   "labels": [
