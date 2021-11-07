@@ -36,7 +36,7 @@ jobs:
         with:
           toolchain: 1.56.1
           override: true
-      - name: Cache cargo registry
+      - name: Prepare cargo registry cache
         uses: actions/cache@v2
         continue-on-error: false
         with:
@@ -49,11 +49,12 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
-      - name: Cache sccache
+      - name: Prepare sccache cache
         uses: actions/cache@v2
         continue-on-error: false
         with:
-          path: ${{ matrix.sccache-path }}
+          path: |
+            /home/runner/.cache/sccache
           key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-sccache-
