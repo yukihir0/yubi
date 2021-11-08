@@ -1,7 +1,8 @@
 {
   "name": "yubi",
-  "context": "..",
-  "dockerFile": "./Dockerfile",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "rust",
+  "workspaceFolder": "/workspace",
   "settings": {
     "files.watcherExclude": {
       "**/target/**": true
