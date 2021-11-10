@@ -8,8 +8,15 @@ on:
 
 jobs:
   build:
-    name: build
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        toolchain:
+          - stable
+
+    name: Rust ${{ matrix.os }} ${{ matrix.toolchain}}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     env:
       CARGO_TERM_COLOR: always
@@ -17,13 +24,14 @@ jobs:
       SCCACHE_CACHE_SIZE: 1G
       SCCACHE_DIR: /home/runner/.cache/sccache
       # SCCACHE_RECACHE: 1 # uncomment this line to clear cache
+      SCCACHE_VERSION: 0.2.15
+      LINK: https://github.com/mozilla/sccache/releases/download
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
       - name: Install sccache
-        env:
-          LINK: https://github.com/mozilla/sccache/releases/download
-          SCCACHE_VERSION: 0.2.15
         run: |
           SCCACHE_FILE=sccache-v$SCCACHE_VERSION-x86_64-unknown-linux-musl
           mkdir -p $HOME/.local/bin
@@ -31,11 +39,13 @@ jobs:
           mv -f $SCCACHE_FILE/sccache $HOME/.local/bin/sccache
           chmod +x $HOME/.local/bin/sccache
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+
       - name: Install rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: 1.56.1
+          toolchain: ${{ matrix.toolchain}}
           override: true
+
       - name: Prepare cargo registry cache
         uses: actions/cache@v2
         continue-on-error: false
@@ -49,6 +59,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
+
       - name: Prepare sccache cache
         uses: actions/cache@v2
         continue-on-error: false
@@ -58,19 +69,24 @@ jobs:
           key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-sccache-
+
       - name: Start sccache server
         run: sccache --start-server
+
       - name: Cargo build
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --verbose
+
       - name: Cargo test
         uses: actions-rs/cargo@v1
         with:
           command: test
           args: --verbose
+
       - name: Print sccache stats
         run: sccache --show-stats
+
       - name: Stop sccache server
         run: sccache --stop-server || true
