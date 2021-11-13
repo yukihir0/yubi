@@ -1,6 +1,7 @@
 name: renovate
 
 on:
+  workflow_dispatch:
   schedule:
     # run at JST 18:00 everyday
     - cron: "0 9 * * *"
@@ -13,7 +14,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: self-hosted renovate
-        uses: renovatebot/github-action@v29.4.2
+        uses: renovatebot/github-action@v29.6.1
         with:
           configurationFile: renovate.json
           token: ${{ secrets.RENOVATE_TOKEN }}

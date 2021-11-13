@@ -34,7 +34,7 @@ renovate:
 		--volume $$PWD/renovate.json:/github-action/renovate.json \
 		--volume /var/run/docker.sock:/var/run/docker.sock.raw \
 		--volume /tmp:/tmp \
-		--rm renovate/renovate:27.31.4-slim
+		--rm renovate/renovate:29.6.1-slim
 
 .PHONY: renovate_dry_run
 renovate_dry_run:
@@ -44,5 +44,5 @@ renovate_dry_run:
 		--volume $$PWD/renovate.json:/github-action/renovate.json \
 		--volume /var/run/docker.sock:/var/run/docker.sock.raw \
 		--volume /tmp:/tmp \
-		--rm renovate/renovate:27.31.4-slim \
+		--rm renovate/renovate:29.6.1-slim \
 		--dry-run
