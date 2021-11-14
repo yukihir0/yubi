@@ -10,10 +10,12 @@ jobs:
   renovate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
-      - name: checkout
+      - name: Checkout repository
         uses: actions/checkout@v2
-      - name: self-hosted renovate
+
+      - name: Run renovate
         uses: renovatebot/github-action@v29.6.1
         with:
           configurationFile: renovate.json
