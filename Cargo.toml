@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.45"
+anyhow = "1.0.51"
 async-std = { version = "1.10.0", features = ["attributes"] }
 async-trait = "0.1.51"
 clap = "3.0.0-beta.5"
