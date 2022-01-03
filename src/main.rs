@@ -1,9 +1,8 @@
-#[macro_use]
 extern crate clap;
 extern crate env_logger;
 
 use anyhow::{Context, Result};
-use clap::{App, Arg};
+use clap::Parser;
 use log;
 use std::fs;
 use std::io::{stdout, BufWriter, Write};
@@ -15,34 +14,26 @@ enum ExitStatus {
     Failure = 1,
 }
 
+#[derive(Parser, Debug)]
+#[clap(about, author, version)]
+struct Args {
+    #[clap(name = "SPEC_FILE", help = "Path to specfile")]
+    specfile: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     env_logger::init();
     log::debug!("start process");
 
     log::debug!("parse command line args");
-    let args = App::new(crate_name!())
-        .version(crate_version!())
-        .author(crate_authors!())
-        .about(crate_description!())
-        .arg(
-            Arg::new("specfile")
-                .about("path to specfile")
-                .value_name("SPEC_FILE")
-                .takes_value(true)
-                .required(true)
-                .index(1),
-        )
-        .get_matches();
+    let args = Args::parse();
 
     log::debug!("parse specfile");
-    let specfile_path = args
-        .value_of("specfile")
-        .with_context(|| format!("failed to get specfile path"))?;
-    let specfile = fs::read_to_string(specfile_path)
-        .with_context(|| format!("failed to open specfile: {}", specfile_path))?;
+    let specfile = fs::read_to_string(&args.specfile)
+        .with_context(|| format!("failed to open specfile: {}", &args.specfile))?;
     let specs = serde_yaml::from_str::<Vec<Spec>>(&specfile)
-        .with_context(|| format!("failed to parse specfile: {}", specfile_path))?;
+        .with_context(|| format!("failed to parse specfile: {}", &args.specfile))?;
 
     log::debug!("check specs");
     let mut report = Report::new();
