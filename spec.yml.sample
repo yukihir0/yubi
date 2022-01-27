@@ -14,3 +14,10 @@
   status:
     - Provisioning
     - Running
+- operator: CloudSqlInstanceStatus
+  project: gcp_project
+  instance: cloud_sql_instance
+  status:
+    - Unspecified
+    - Runnable
+    
