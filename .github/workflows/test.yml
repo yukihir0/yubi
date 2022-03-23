@@ -48,7 +48,7 @@ jobs:
           override: true
 
       - name: Prepare cargo registry cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         continue-on-error: false
         with:
           path: |
@@ -62,7 +62,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Prepare sccache cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         continue-on-error: false
         with:
           path: |
