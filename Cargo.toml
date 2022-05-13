@@ -11,7 +11,7 @@ clap = { version = "3.1.15", features = ["derive"] }
 env_logger = "0.9.0"
 googapis = { version = "0.6.0", features = ["google-container-v1"] }
 gouth = { version = "0.2.1" }
-log = "0.4.14"
+log = "0.4.17"
 prost = "0.9.0"
 prost-types = "0.9.0"
 serde = { version = "1.0.136", features = ["derive"] }
