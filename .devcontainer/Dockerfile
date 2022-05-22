@@ -1,4 +1,4 @@
-FROM rust:1.60.0
+FROM rust:1.61.0
 
 ENV CARGO_BUILD_TARGET_DIR=/tmp/target
 
