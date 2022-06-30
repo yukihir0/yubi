@@ -1,17 +1,21 @@
 pub mod cluster_status;
 pub mod node_pool_status;
 pub mod result;
+pub mod sql_instance_status;
 
 use anyhow::Result;
 use serde::ser::{Serialize, SerializeMap, Serializer};
 use serde::Deserialize;
 
+use crate::client::cloud_sql_client::CloudSqlClient;
 use crate::client::gke_client::GKEClient;
+use crate::operator::cloud_sql_instance_status_operator::CloudSqlInstanceStatusOperator;
 use crate::operator::gke_cluster_status_operator::GKEClusterStatusOperator;
 use crate::operator::gke_node_pool_status_operator::GKENodePoolStatusOperator;
 use crate::spec::cluster_status::ClusterStatus;
 use crate::spec::node_pool_status::NodePoolStatus;
 use crate::spec::result::SpecResult;
+use crate::spec::sql_instance_status::SqlInstanceStatus;
 
 #[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone)]
 #[serde(tag = "operator")]
@@ -28,6 +32,11 @@ pub enum Spec {
         cluster: String,
         node_pool: String,
         status: Vec<NodePoolStatus>,
+    },
+    CloudSqlInstanceStatus {
+        project: String,
+        instance: String,
+        status: Vec<SqlInstanceStatus>,
     },
 }
 
@@ -64,6 +73,18 @@ impl Serialize for Spec {
                 map.serialize_entry("location", location)?;
                 map.serialize_entry("cluster", cluster)?;
                 map.serialize_entry("node_pool", node_pool)?;
+                map.serialize_entry("status", status)?;
+                map.end()
+            }
+            Self::CloudSqlInstanceStatus {
+                project,
+                instance,
+                status,
+            } => {
+                let mut map = serializer.serialize_map(Some(4))?;
+                map.serialize_entry("operator", "CloudSqlInstanceStatus")?;
+                map.serialize_entry("project", project)?;
+                map.serialize_entry("instance", instance)?;
                 map.serialize_entry("status", status)?;
                 map.end()
             }
@@ -104,6 +125,20 @@ impl Spec {
                     node_pool.clone(),
                     status.clone(),
                     Box::new(GKEClient::new()),
+                )
+                .check()
+                .await
+            }
+            Self::CloudSqlInstanceStatus {
+                project,
+                instance,
+                status,
+            } => {
+                CloudSqlInstanceStatusOperator::new(
+                    project.clone(),
+                    instance.clone(),
+                    status.clone(),
+                    Box::new(CloudSqlClient::new()),
                 )
                 .check()
                 .await
@@ -193,6 +228,39 @@ node_pool: node_pool-002
 status:
   - Provisioning
   - Running
+"#
+        )
+    )]
+    #[case(
+        Spec::CloudSqlInstanceStatus {
+            project: format!("project-001"),
+            instance: format!("sql_instance-001"),
+            status: vec![SqlInstanceStatus::Unspecified],
+        },
+        format!(
+r#"---
+operator: CloudSqlInstanceStatus
+project: project-001
+instance: sql_instance-001
+status:
+  - Unspecified
+"#
+        )
+    )]
+    #[case(
+        Spec::CloudSqlInstanceStatus {
+            project: format!("project-002"),
+            instance: format!("sql_instance-002"),
+            status: vec![SqlInstanceStatus::Unspecified, SqlInstanceStatus::Runnable],
+        },
+        format!(
+r#"---
+operator: CloudSqlInstanceStatus
+project: project-002
+instance: sql_instance-002
+status:
+  - Unspecified
+  - Runnable
 "#
         )
     )]

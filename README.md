@@ -88,6 +88,29 @@ Set GOOGLE_APPLICATION_CREDENTIALS environmen variables.
 | node_pool | gke node pool                         | string            | gke_node_pool                                                                    |
 | status    | gke cluster status                    | array of constant | Unspecified / Provisioning / Running / Reconciling / Stopping / Error / Degraded |
 
+##### CloudSqlInstanceStatus
+
+CloudSqlInstanceStatus operator check CloudSql Instance status within expected status.
+
+###### requirement
+
+CloudSqlInstanceStatus operator authenticates gcp by GOOGLE_APPLICATION_CREDENTIALS.
+
+Set GOOGLE_APPLICATION_CREDENTIALS environmen variables.
+
+```
+% export GOOGLE_APPLICATION_CREDENTIALS=<path/to/credential>
+```
+
+###### format
+
+| key      | description               | type              | value                                                                                                          |
+| -------- | ------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| operator | operator                  | constant          | CloudSqlInstanceStatus                                                                                         |
+| project  | gcp project               | string            | gcp_project                                                                                                    |
+| instance | cloud sql instance        | string            | cloud_sql_instance                                                                                             |
+| status   | cloud sql instance status | array of constant | Unspecified / Runnable / Suspended / PendingDelete / PendingCreate / Maintenance / Failed / Online Maintenance |
+
 ### report (output)
 
 report has summary and detail.

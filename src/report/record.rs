@@ -31,6 +31,7 @@ mod tests {
     use crate::report::*;
     use crate::spec::cluster_status::*;
     use crate::spec::node_pool_status::*;
+    use crate::spec::sql_instance_status::*;
     use crate::spec::*;
     use rstest::*;
 
@@ -179,6 +180,72 @@ spec:
   status:
     - Provisioning
     - Running
+spec_result:
+  code: error
+  description: error_description
+"#
+        )
+    )]
+    #[case(
+        Spec::CloudSqlInstanceStatus {
+            project: format!("success_project"),
+            instance: format!("success_instance"),
+            status: vec![SqlInstanceStatus::Unspecified, SqlInstanceStatus::Runnable],
+        },
+        SpecResult::Success { description: format!("success_description") },
+        format!(
+r#"---
+spec:
+  operator: CloudSqlInstanceStatus
+  project: success_project
+  instance: success_instance
+  status:
+    - Unspecified
+    - Runnable
+spec_result:
+  code: success
+  description: success_description
+"#
+        )
+    )]
+    #[case(
+        Spec::CloudSqlInstanceStatus {
+            project: format!("failure_project"),
+            instance: format!("failure_instance"),
+            status: vec![SqlInstanceStatus::Unspecified, SqlInstanceStatus::Runnable],
+        },
+        SpecResult::Failure { description: format!("failure_description") },
+        format!(
+r#"---
+spec:
+  operator: CloudSqlInstanceStatus
+  project: failure_project
+  instance: failure_instance
+  status:
+    - Unspecified
+    - Runnable
+spec_result:
+  code: failure
+  description: failure_description
+"#
+        )
+    )]
+    #[case(
+        Spec::CloudSqlInstanceStatus {
+            project: format!("error_project"),
+            instance: format!("error_instance"),
+            status: vec![SqlInstanceStatus::Unspecified, SqlInstanceStatus::Runnable],
+        },
+        SpecResult::Error { description: format!("error_description") },
+        format!(
+r#"---
+spec:
+  operator: CloudSqlInstanceStatus
+  project: error_project
+  instance: error_instance
+  status:
+    - Unspecified
+    - Runnable
 spec_result:
   code: error
   description: error_description
