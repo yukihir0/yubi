@@ -44,8 +44,7 @@ mod tests {
         3,
         4,
         format!(
-r#"---
-total: 1
+r#"total: 1
 success: 2
 failure: 3
 error: 4

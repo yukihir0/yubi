@@ -44,15 +44,14 @@ mod tests {
         },
         SpecResult::Success { description: format!("success_description") },
         format!(
-r#"---
-spec:
+r#"spec:
   operator: GKEClusterStatus
   project: success_project
   location: success_location
   cluster: success_cluster
   status:
-    - Provisioning
-    - Running
+  - Provisioning
+  - Running
 spec_result:
   code: success
   description: success_description
@@ -68,15 +67,14 @@ spec_result:
         },
         SpecResult::Failure { description: format!("failure_description") },
         format!(
-r#"---
-spec:
+r#"spec:
   operator: GKEClusterStatus
   project: failure_project
   location: failure_location
   cluster: failure_cluster
   status:
-    - Provisioning
-    - Running
+  - Provisioning
+  - Running
 spec_result:
   code: failure
   description: failure_description
@@ -92,15 +90,14 @@ spec_result:
         },
         SpecResult::Error { description: format!("error_description") },
         format!(
-r#"---
-spec:
+r#"spec:
   operator: GKEClusterStatus
   project: error_project
   location: error_location
   cluster: error_cluster
   status:
-    - Provisioning
-    - Running
+  - Provisioning
+  - Running
 spec_result:
   code: error
   description: error_description
@@ -117,16 +114,15 @@ spec_result:
         },
         SpecResult::Success { description: format!("success_description") },
         format!(
-r#"---
-spec:
+r#"spec:
   operator: GKENodePoolStatus
   project: success_project
   location: success_location
   cluster: success_cluster
   node_pool: success_node_pool
   status:
-    - Provisioning
-    - Running
+  - Provisioning
+  - Running
 spec_result:
   code: success
   description: success_description
@@ -143,16 +139,15 @@ spec_result:
         },
         SpecResult::Failure { description: format!("failure_description") },
         format!(
-r#"---
-spec:
+r#"spec:
   operator: GKENodePoolStatus
   project: failure_project
   location: failure_location
   cluster: failure_cluster
   node_pool: failure_node_pool
   status:
-    - Provisioning
-    - Running
+  - Provisioning
+  - Running
 spec_result:
   code: failure
   description: failure_description
@@ -169,16 +164,15 @@ spec_result:
         },
         SpecResult::Error { description: format!("error_description") },
         format!(
-r#"---
-spec:
+r#"spec:
   operator: GKENodePoolStatus
   project: error_project
   location: error_location
   cluster: error_cluster
   node_pool: error_node_pool
   status:
-    - Provisioning
-    - Running
+  - Provisioning
+  - Running
 spec_result:
   code: error
   description: error_description
