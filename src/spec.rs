@@ -126,13 +126,12 @@ mod tests {
             status: vec![ClusterStatus::Provisioning],
         },
         format!(
-r#"---
-operator: GKEClusterStatus
+r#"operator: GKEClusterStatus
 project: project-001
 location: location-001
 cluster: cluster-001
 status:
-  - Provisioning
+- Provisioning
 "#
         )
     )]
@@ -144,14 +143,13 @@ status:
             status: vec![ClusterStatus::Provisioning, ClusterStatus::Running],
         },
         format!(
-r#"---
-operator: GKEClusterStatus
+r#"operator: GKEClusterStatus
 project: project-002
 location: location-002
 cluster: cluster-002
 status:
-  - Provisioning
-  - Running
+- Provisioning
+- Running
 "#
         )
     )]
@@ -164,14 +162,13 @@ status:
             status: vec![NodePoolStatus::Provisioning],
         },
         format!(
-r#"---
-operator: GKENodePoolStatus
+r#"operator: GKENodePoolStatus
 project: project-001
 location: location-001
 cluster: cluster-001
 node_pool: node_pool-001
 status:
-  - Provisioning
+- Provisioning
 "#
         )
     )]
@@ -184,15 +181,14 @@ status:
             status: vec![NodePoolStatus::Provisioning, NodePoolStatus::Running],
         },
         format!(
-r#"---
-operator: GKENodePoolStatus
+r#"operator: GKENodePoolStatus
 project: project-002
 location: location-002
 cluster: cluster-002
 node_pool: node_pool-002
 status:
-  - Provisioning
-  - Running
+- Provisioning
+- Running
 "#
         )
     )]

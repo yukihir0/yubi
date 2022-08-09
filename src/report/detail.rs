@@ -113,15 +113,14 @@ mod tests {
     #[rstest]
     #[case(
         format!(
-r#"---
-- spec:
+r#"- spec:
     operator: GKEClusterStatus
     project: success_project
     location: success_location
     cluster: success_cluster
     status:
-      - Provisioning
-      - Running
+    - Provisioning
+    - Running
   spec_result:
     code: success
     description: success_description
@@ -131,8 +130,8 @@ r#"---
     location: failure_location
     cluster: failure_cluster
     status:
-      - Provisioning
-      - Running
+    - Provisioning
+    - Running
   spec_result:
     code: failure
     description: failure_description
@@ -142,8 +141,8 @@ r#"---
     location: error_location
     cluster: error_cluster
     status:
-      - Provisioning
-      - Running
+    - Provisioning
+    - Running
   spec_result:
     code: error
     description: error_description
@@ -154,8 +153,8 @@ r#"---
     cluster: success_cluster
     node_pool: success_node_pool
     status:
-      - Provisioning
-      - Running
+    - Provisioning
+    - Running
   spec_result:
     code: success
     description: success_description
@@ -166,8 +165,8 @@ r#"---
     cluster: failure_cluster
     node_pool: failure_node_pool
     status:
-      - Provisioning
-      - Running
+    - Provisioning
+    - Running
   spec_result:
     code: failure
     description: failure_description
@@ -178,8 +177,8 @@ r#"---
     cluster: error_cluster
     node_pool: error_node_pool
     status:
-      - Provisioning
-      - Running
+    - Provisioning
+    - Running
   spec_result:
     code: error
     description: error_description

@@ -78,8 +78,7 @@ mod tests {
     #[case(
         SpecResult::Success{ description: format!("success_description")},
         format!(
-r#"---
-code: success
+r#"code: success
 description: success_description
 "#
         )
@@ -87,8 +86,7 @@ description: success_description
     #[case(
         SpecResult::Failure{ description : format!("failure_description")},
         format!(
-r#"---
-code: failure
+r#"code: failure
 description: failure_description
 "#
         )
@@ -96,8 +94,7 @@ description: failure_description
     #[case(
         SpecResult::Error{ description: format!("error_description")},
         format!(
-r#"---
-code: error
+r#"code: error
 description: error_description
 "#
         )
