@@ -2,9 +2,9 @@ name: renovate
 
 on:
   workflow_dispatch:
-  schedule:
-    # run at JST 18:00 everyday
-    - cron: "0 9 * * *"
+  # schedule:
+  #   # run at JST 18:00 everyday
+  #   - cron: "0 9 * * *"
 
 jobs:
   renovate:
